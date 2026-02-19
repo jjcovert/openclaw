@@ -390,11 +390,19 @@ export async function runPreparedReply(
     typeof lastFullPromptCompactionCount === "number"
       ? compactionCountBeforeRun > lastFullPromptCompactionCount
       : compactionCountBeforeRun > 0;
+  const normalizedModelForCompare = (() => {
+    const trimmed = model.trim();
+    if (!trimmed) {
+      return trimmed;
+    }
+    const slashIndex = trimmed.indexOf("/");
+    return slashIndex >= 0 ? trimmed.slice(slashIndex + 1) : trimmed;
+  })();
   const modelHandoffDetected =
     !isNewSession &&
     Boolean(
       (sessionEntry?.modelProvider && sessionEntry.modelProvider !== provider) ||
-      (sessionEntry?.model && sessionEntry.model !== model),
+      (sessionEntry?.model && sessionEntry.model !== normalizedModelForCompare),
     );
   const promptContextMode: "full" | "delta" =
     isNewSession || resetTriggered || hasCompactedSinceLastFullPrompt || modelHandoffDetected
