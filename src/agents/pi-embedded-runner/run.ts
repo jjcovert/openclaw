@@ -541,6 +541,9 @@ export async function runEmbeddedPiAgent(
             streamParams: params.streamParams,
             ownerNumbers: params.ownerNumbers,
             enforceFinalTag: params.enforceFinalTag,
+            promptContextMode: params.promptContextMode,
+            promptContextReason: params.promptContextReason,
+            compactionCountBeforeRun: params.compactionCountBeforeRun,
           });
 
           const {
