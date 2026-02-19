@@ -125,6 +125,9 @@ export function buildSystemPromptReport(params: {
   injectedFiles: EmbeddedContextFile[];
   skillsPrompt: string;
   tools: AgentTool[];
+  contextInjectionMode?: SessionSystemPromptReport["contextInjectionMode"];
+  contextInjectionReason?: SessionSystemPromptReport["contextInjectionReason"];
+  compactionCountAtBuild?: number;
 }): SessionSystemPromptReport {
   const systemPrompt = params.systemPrompt.trim();
   const projectContext = extractBetween(
@@ -155,6 +158,11 @@ export function buildSystemPromptReport(params: {
       projectContextChars,
       nonProjectContextChars: Math.max(0, systemPrompt.length - projectContextChars),
     },
+    contextInjectionMode: params.contextInjectionMode,
+    contextInjectionReason: params.contextInjectionReason,
+    compactionCountAtBuild: params.compactionCountAtBuild,
+    fullPromptCompactionCount:
+      params.contextInjectionMode === "full" ? params.compactionCountAtBuild : undefined,
     injectedWorkspaceFiles: buildInjectedWorkspaceFiles({
       bootstrapFiles: params.bootstrapFiles,
       injectedFiles: params.injectedFiles,

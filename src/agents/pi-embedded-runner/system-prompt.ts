@@ -47,6 +47,8 @@ export function buildEmbeddedSystemPrompt(params: {
   userTime?: string;
   userTimeFormat?: ResolvedTimeFormat;
   contextFiles?: EmbeddedContextFile[];
+  projectContextMode?: "full" | "delta";
+  contextFilePaths?: string[];
   memoryCitationsMode?: MemoryCitationsMode;
 }): string {
   return buildAgentSystemPrompt({
@@ -73,6 +75,8 @@ export function buildEmbeddedSystemPrompt(params: {
     userTime: params.userTime,
     userTimeFormat: params.userTimeFormat,
     contextFiles: params.contextFiles,
+    projectContextMode: params.projectContextMode,
+    contextFilePaths: params.contextFilePaths,
     memoryCitationsMode: params.memoryCitationsMode,
   });
 }

@@ -169,6 +169,19 @@ export type SessionSystemPromptReport = {
     projectContextChars: number;
     nonProjectContextChars: number;
   };
+  /** Whether this run injected full project context files or used lightweight delta context. */
+  contextInjectionMode?: "full" | "delta";
+  /** Reason selected for this run's context injection mode. */
+  contextInjectionReason?:
+    | "session-start"
+    | "session-reset"
+    | "compaction"
+    | "model-handoff"
+    | "steady-state";
+  /** Compaction count observed when this prompt was built. */
+  compactionCountAtBuild?: number;
+  /** Latest compaction count for which a full prompt was injected. */
+  fullPromptCompactionCount?: number;
   injectedWorkspaceFiles: Array<{
     name: string;
     path: string;
