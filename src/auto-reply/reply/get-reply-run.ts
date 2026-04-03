@@ -383,6 +383,45 @@ export async function runPreparedReply(
     isNewSession,
   });
   const authProfileIdSource = sessionEntry?.authProfileOverrideSource;
+  const compactionCountBeforeRun = sessionEntry?.compactionCount ?? 0;
+  const lastPromptReport = sessionEntry?.systemPromptReport;
+  const lastFullPromptCompactionCount = lastPromptReport?.fullPromptCompactionCount;
+  const hasCompactedSinceLastFullPrompt =
+    typeof lastFullPromptCompactionCount === "number"
+      ? compactionCountBeforeRun > lastFullPromptCompactionCount
+      : compactionCountBeforeRun > 0;
+  const normalizedModelForCompare = (() => {
+    const trimmed = model.trim();
+    if (!trimmed) {
+      return trimmed;
+    }
+    const slashIndex = trimmed.indexOf("/");
+    return slashIndex >= 0 ? trimmed.slice(slashIndex + 1) : trimmed;
+  })();
+  const modelHandoffDetected =
+    !isNewSession &&
+    Boolean(
+      (sessionEntry?.modelProvider && sessionEntry.modelProvider !== provider) ||
+      (sessionEntry?.model && sessionEntry.model !== normalizedModelForCompare),
+    );
+  const promptContextMode: "full" | "delta" =
+    isNewSession || resetTriggered || hasCompactedSinceLastFullPrompt || modelHandoffDetected
+      ? "full"
+      : "delta";
+  const promptContextReason:
+    | "session-start"
+    | "session-reset"
+    | "compaction"
+    | "model-handoff"
+    | "steady-state" = isNewSession
+    ? "session-start"
+    : resetTriggered
+      ? "session-reset"
+      : hasCompactedSinceLastFullPrompt
+        ? "compaction"
+        : modelHandoffDetected
+          ? "model-handoff"
+          : "steady-state";
   const followupRun = {
     prompt: queuedBody,
     messageId: sessionCtx.MessageSidFull ?? sessionCtx.MessageSid,
@@ -431,6 +470,9 @@ export async function runPreparedReply(
       blockReplyBreak: resolvedBlockStreamingBreak,
       ownerNumbers: command.ownerList.length > 0 ? command.ownerList : undefined,
       extraSystemPrompt: extraSystemPrompt || undefined,
+      promptContextMode,
+      promptContextReason,
+      compactionCountBeforeRun,
       ...(isReasoningTagProvider(provider) ? { enforceFinalTag: true } : {}),
     },
   };

@@ -101,4 +101,15 @@ export type RunEmbeddedPiAgentParams = {
   streamParams?: AgentStreamParams;
   ownerNumbers?: string[];
   enforceFinalTag?: boolean;
+  /** Controls whether full project-context files are reinjected this turn. */
+  promptContextMode?: "full" | "delta";
+  /** Why promptContextMode was selected. */
+  promptContextReason?:
+    | "session-start"
+    | "session-reset"
+    | "compaction"
+    | "model-handoff"
+    | "steady-state";
+  /** Compaction count observed before this run (from session entry). */
+  compactionCountBeforeRun?: number;
 };

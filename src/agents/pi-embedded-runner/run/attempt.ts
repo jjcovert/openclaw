@@ -434,6 +434,7 @@ export async function runEmbeddedAttempt(
     });
     const ttsHint = params.config ? buildTtsSystemPromptHint(params.config) : undefined;
 
+    const promptContextMode = params.promptContextMode ?? "full";
     const appendPrompt = buildEmbeddedSystemPrompt({
       workspaceDir: effectiveWorkspace,
       defaultThinkLevel: params.thinkLevel,
@@ -458,7 +459,9 @@ export async function runEmbeddedAttempt(
       userTimezone,
       userTime,
       userTimeFormat,
-      contextFiles,
+      contextFiles: promptContextMode === "full" ? contextFiles : [],
+      projectContextMode: promptContextMode,
+      contextFilePaths: contextFiles.map((file) => file.path),
       memoryCitationsMode: params.config?.memory?.citations,
     });
     const systemPromptReport = buildSystemPromptReport({
@@ -480,9 +483,12 @@ export async function runEmbeddedAttempt(
       })(),
       systemPrompt: appendPrompt,
       bootstrapFiles: hookAdjustedBootstrapFiles,
-      injectedFiles: contextFiles,
+      injectedFiles: promptContextMode === "full" ? contextFiles : [],
       skillsPrompt,
       tools,
+      contextInjectionMode: promptContextMode,
+      contextInjectionReason: params.promptContextReason,
+      compactionCountAtBuild: params.compactionCountBeforeRun,
     });
     const systemPromptOverride = createSystemPromptOverride(appendPrompt);
     const systemPromptText = systemPromptOverride();

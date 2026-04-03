@@ -180,6 +180,10 @@ export function buildAgentSystemPrompt(params: {
   userTime?: string;
   userTimeFormat?: ResolvedTimeFormat;
   contextFiles?: EmbeddedContextFile[];
+  /** Inject full project context files or only a lightweight delta note. */
+  projectContextMode?: "full" | "delta";
+  /** Paths to context files for delta-mode reminders. */
+  contextFilePaths?: string[];
   skillsPrompt?: string;
   heartbeatPrompt?: string;
   docsPath?: string;
@@ -577,10 +581,14 @@ export function buildAgentSystemPrompt(params: {
   }
 
   const contextFiles = params.contextFiles ?? [];
+  const projectContextMode = params.projectContextMode ?? "full";
   const validContextFiles = contextFiles.filter(
     (file) => typeof file.path === "string" && file.path.trim().length > 0,
   );
-  if (validContextFiles.length > 0) {
+  const deltaContextPaths = (params.contextFilePaths ?? validContextFiles.map((file) => file.path))
+    .map((value) => value.trim())
+    .filter(Boolean);
+  if (projectContextMode === "full" && validContextFiles.length > 0) {
     const hasSoulFile = validContextFiles.some((file) => {
       const normalizedPath = file.path.trim().replace(/\\/g, "/");
       const baseName = normalizedPath.split("/").pop() ?? normalizedPath;
@@ -596,6 +604,17 @@ export function buildAgentSystemPrompt(params: {
     for (const file of validContextFiles) {
       lines.push(`## ${file.path}`, "", file.content, "");
     }
+  }
+  if (projectContextMode === "delta" && deltaContextPaths.length > 0) {
+    lines.push(
+      "# Project Context (delta)",
+      "",
+      "Full project-context file contents were already injected earlier in this session.",
+      "Reinject full context on session starts/resets, compaction boundaries, and model/session handoffs.",
+      "Known context files:",
+      ...deltaContextPaths.map((path) => `- ${path}`),
+      "",
+    );
   }
 
   // Skip silent replies for subagent/none modes

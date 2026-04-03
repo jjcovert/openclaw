@@ -160,6 +160,9 @@ export function createFollowupRunner(params: {
               extraSystemPrompt: queued.run.extraSystemPrompt,
               ownerNumbers: queued.run.ownerNumbers,
               enforceFinalTag: queued.run.enforceFinalTag,
+              promptContextMode: queued.run.promptContextMode,
+              promptContextReason: queued.run.promptContextReason,
+              compactionCountBeforeRun: queued.run.compactionCountBeforeRun,
               provider,
               model,
               ...authProfile,
@@ -212,6 +215,7 @@ export function createFollowupRunner(params: {
           modelUsed,
           providerUsed: fallbackProvider,
           contextTokensUsed,
+          systemPromptReport: runResult.meta?.systemPromptReport,
           logLabel: "followup",
         });
       }
